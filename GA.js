@@ -1,5 +1,5 @@
- /*
- * ga.js
+/*
+ * GA.js
  * 
  * Copyright (c) 2013, Трапенок Виктор (Trapenok Victor). All rights reserved.
  *
@@ -11,12 +11,7 @@
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Lesser General Public License for more details. 
  */
 
 
@@ -106,7 +101,7 @@ function GraphGen(vertex)
 
 laba1 = function ()
 {
-    this.gr = GraphGen(100); // Граф
+    this.gr = GraphGen(100); // Граф и его размерность
 
     /**
      * Генерирует сущьности
@@ -142,9 +137,9 @@ laba1 = function ()
     } 
 
     /**
-     * Тестирует на пришодность переданую сущьность
-     * @param array entity
-     * @returns {Number|@exp;entity@pro;length} Коэфицент пригодности, чем меньше тем лучше или -1 в слцучаии полной непригодности индивида.
+     * Тестирует на пригодность переданую сущьность
+     * @param array entity сущьность
+     * @returns {Number|@exp;entity@pro;length} Коэфицент пригодности, чем меньше тем лучше или -1 в случаии полной непригодности индивида.
      */
     this.test = function(entity)
     { 
@@ -167,8 +162,8 @@ laba1 = function ()
     this.getAnswer = function()
     {
         var k = 0;
-        var re = 999;
-        var rkn = 4;  // Минимальное колво повторений лучшего ответа
+        var re = 999; // Хранит значение минимальной найденой длины
+        var rkn = 0;  // Хранит текущее количество итераций не приведших к улучшению ответа
         var max_itr = 12 // Максимальное количество поколений
         do{
             k++;
@@ -181,7 +176,7 @@ laba1 = function ()
                 console.log("Итерация:"+k)
             }
             
-            for(var i=0; i < this.generation_size; i )
+            for(var i=0; i < this.generation_size; i ) // Цикл генерации поколений
             {
                 var entity = this.gen()
                 
@@ -196,26 +191,30 @@ laba1 = function ()
             if(this.generation.length < 3)
             {
                 console.error( "Ошибка генерации length = " + this.generation.length)
-                return this.generation
+                return this.generation;
             }
             
             var thisObj = this;
-            this.generation.sort(function(a, b){
+            this.generation.sort(function(a, b){ // Сортировка сгенерированых поколений по степени их пригодности
                 return thisObj.test(a)  - thisObj.test(b)
             })
               
-            this.generation.splice( Math.floor(this.generation.length/3 ), this.generation.length)
+            this.generation.splice( Math.floor(this.generation.length/3 ), this.generation.length) // Отрезаем наименне адоптированных
              
             if( re - this.test( this.generation[0] )  === 0 )
-            {
-                rkn --
-                if(rkn === 0)
+            {   // Если было 4 итерации без улучшения ответа то завершить работу.
+                rkn ++
+                if(rkn > 4)
                 { 
                     console.log("Top:", this.generation[0])
                     return this.generation;
                 }
             }
-            re = this.test( this.generation[0] )  
+            else
+            {
+               rkn = 0;
+            }
+            re = this.test( this.generation[0] )  // Запоминаем лучший результат за текущее поколение
              
         }while( k < max_itr);
     }
