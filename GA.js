@@ -1,6 +1,6 @@
 /*
  * GA.js
- * 
+ *
  * Copyright (c) 2013, Трапенок Виктор (Trapenok Victor). All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -11,7 +11,7 @@
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details. 
+ * Lesser General Public License for more details.
  */
 
 
@@ -49,7 +49,7 @@ function GraphGen(vertex)
             gr[link] = [];
             t_part.push(link);
         }
- 
+
 
         if(gr[curent_vertex].indexOf(link) === -1 )
         {
@@ -99,7 +99,7 @@ function GraphGen(vertex)
     return gr
 }
 
-laba1 = function ()
+GA = function ()
 {
     this.gr = GraphGen(100); // Граф и его размерность
 
@@ -116,15 +116,15 @@ laba1 = function ()
         {
             entity.push( last )
             last = this.gr[last][ Math.floor((this.gr[last].length ) * Math.random()) ]
-            
+
             if(entity.length > 2)
-            { 
+            {
                 while(   entity[entity.length-2] === last  && this.gr[last].length > 1)
                 {
                     last = this.gr[last][ Math.floor((this.gr[last].length ) * Math.random()) ]
                 }
             }
-            
+
             if( entity.length > 10 *this.gr.length )
             {
                 break;
@@ -134,7 +134,7 @@ laba1 = function ()
 
 
         return entity;
-    } 
+    }
 
     /**
      * Тестирует на пригодность переданую сущьность
@@ -142,10 +142,10 @@ laba1 = function ()
      * @returns {Number|@exp;entity@pro;length} Коэфицент пригодности, чем меньше тем лучше или -1 в случаии полной непригодности индивида.
      */
     this.test = function(entity)
-    { 
+    {
         //console.error(entity)
         for(var k in this.gr)
-        { 
+        {
             if(entity.indexOf(k/1) === -1)
             {
                 return -1; // Не прошол по всем вершинам.
@@ -155,57 +155,114 @@ laba1 = function ()
         return entity.length;
     }
 
+    /**
+     * Зменяет у сущьности весе элементы начиная с start
+     * @returns {Array} entity
+     */
+    this.ReGenFrom = function(base_entity, start)
+    {
+        var entity = base_entity.slice(start-1);
+
+        var last = base_entity[start] 
+        do
+        {
+            entity.push( last )
+            last = this.gr[last][ Math.floor((this.gr[last].length -1) * Math.random()) ]
+
+            if(entity.length > 2)
+            {
+                while(   entity[entity.length-2] === last  && this.gr[last].length > 1)
+                {
+                    last = this.gr[last][ Math.floor((this.gr[last].length ) * Math.random()) ]
+                }
+            }
+
+            if( entity.length > 10 *this.gr.length )
+            {
+                break;
+            }
+
+        }while( this.test(entity) === -1 );
+
+
+        return entity;
+    }
+
     this.generation = [] // Особи поколения
     this.generation_size = 8; // Размер поколения
- 
-    
+
+
     this.getAnswer = function()
     {
         var k = 0;
         var re = 999; // Хранит значение минимальной найденой длины
         var rkn = 0;  // Хранит текущее количество итераций не приведших к улучшению ответа
-        var max_itr = 12 // Максимальное количество поколений
+        var max_itr = 4 // Максимальное количество поколений
         do{
             k++;
             if(this.generation.length > 0)
             {
-                console.log("Итерация:"+k+"  Длина:"+ this.test( this.generation[0] )  )
+                console.warn("Итерация:"+k+"  Длина:"+ this.test( this.generation[0] ) , this.generation )
             }
             else
             {
-                console.log("Итерация:"+k)
+                console.warn("Итерация:"+k)
             }
-            
-            for(var i=0; i < this.generation_size; i ) // Цикл генерации поколений
+
+            for(var i=this.generation.length; i < this.generation_size; i ) // Цикл генерации поколений
             {
                 var entity = this.gen()
-                
+
                 if( this.test(entity) !== -1)
                 {
-                    console.log(i, this.test(entity))
+                    console.log("A"+i, this.test(entity))
                     i++;
                     this.generation.push(entity)
                 }
-            }
+            } 
 
-            if(this.generation.length < 3)
+            this.generation.sort(function(a, b){ // Сортировка сгенерированых поколений по степени их пригодности
+                return a.length  - b.length;
+            })
+            
+            console.log("A.length:"+this.generation.length, this.generation)
+
+            this.generation.splice( Math.floor(this.generation.length/3 ), this.generation.length) // Отрезаем наименне адоптированных
+
+            console.log("A-B length:"+this.generation.length, this.generation)
+
+            for(var i=0; this.generation.length < this.generation_size; i ) // Цикл мутации и размножения
             {
-                console.error( "Ошибка генерации length = " + this.generation.length)
-                return this.generation;
+                var start = Math.floor(Math.random()*(this.generation[i].length ));  
+                var new_entity = this.ReGenFrom(this.generation[i], start ); // Изменение цепочки начиная с случайного элемента и до конца
+
+                if( this.test(new_entity) !== -1)
+                {
+                    console.log("B"+i, this.test(new_entity))
+                    this.generation.push(new_entity)
+                    i++;
+                }
             }
             
-            var thisObj = this;
+            console.log("B.length:"+this.generation.length, this.generation)
+            
             this.generation.sort(function(a, b){ // Сортировка сгенерированых поколений по степени их пригодности
-                return thisObj.test(a)  - thisObj.test(b)
+                return a.length  - b.length;
             })
-              
-            this.generation.splice( Math.floor(this.generation.length/3 ), this.generation.length) // Отрезаем наименне адоптированных
-             
+
+            this.generation.splice( Math.floor(this.generation.length/4 ), this.generation.length) // Отрезаем наименне адоптированных
+
+            console.log("C.length:"+this.generation.length, this.generation)
+            
+            this.generation.sort(function(a, b){ // Сортировка сгенерированых поколений по степени их пригодности
+                return a.length  - b.length;
+            })
+
             if( re - this.test( this.generation[0] )  === 0 )
             {   // Если было 4 итерации без улучшения ответа то завершить работу.
                 rkn ++
                 if(rkn > 4)
-                { 
+                {
                     console.log("Top:", this.generation[0])
                     return this.generation;
                 }
@@ -215,14 +272,15 @@ laba1 = function ()
                rkn = 0;
             }
             re = this.test( this.generation[0] )  // Запоминаем лучший результат за текущее поколение
-             
+
         }while( k < max_itr);
+        return this.generation;
     }
 }
 
 
 
 
-    var laba = new laba1()
-    answer = laba.getAnswer()
+    var ga = new GA()
+    answer = ga.getAnswer()
     console.log("УРА! УРА! УРА!\nTop:", answer)
