@@ -1,5 +1,5 @@
 /*
- * GA.js
+ * Simulated_annealing.js
  *
  * Copyright (c) 2013, Трапенок Виктор (Trapenok Victor). All rights reserved.
  *
